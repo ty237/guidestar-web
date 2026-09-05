@@ -421,18 +421,12 @@ function Home(){
     <div class="hero">
       <div>
         <${Eyebrow}>Airborne sonar · imaging through a moving water surface<//>
-        <h1>A novel autofocusing architecture for imaging through aberrating air–water interfaces</h1>
+        <h1>An acoustic guide star for imaging through a dynamic air–water interface</h1>
         <p class="lede">A laser-made cavitation click beneath the surface acts as an
         <b>acoustic guide star</b>: one click, fired at a known depth and time and heard through the waves by a
         128-microphone array in the air, reveals how the surface is bending
         the rays — so the sonar image underneath can be refocused. Borrowed from
         astronomy. Pointed down.</p>
-        <div class="stats">
-          <div class="stat"><b>23 / 24</b><span>reflectors improved across the campaign</span></div>
-          <div class="stat"><b>+6.7 dB</b><span>best single-reflector focus gain over the mapper</span></div>
-          <div class="stat"><b>52 %</b><span>median share of the focus gap recovered per reflector</span></div>
-          <div class="stat"><b>1.00000</b><span>twin air-side propagation vs exact analytic oracle</span></div>
-        </div>
       </div>
       <div class="heroplate"><img src=${IMG.hero} alt="Exploded view of the scene: microphone array in air, wavy water surface with guide-star read footprint, cavitation click, illuminated targets on the bottom"/><div class="mono" style=${{fontSize:"11px",color:"var(--muted)",paddingTop:8}}>scene stylized — campaign targets are cm-scale reflectors ~0.8 m deep</div></div>
     </div>
@@ -459,6 +453,15 @@ function Home(){
         <div class="step"><em>02</em><h3>Fire the star</h3><p>A focused laser pulse makes a cavitation bubble ~0.5 m down: a known, point-like, broadband click on the far side of the waves.</p></div>
         <div class="step"><em>03</em><h3>Invert the screen</h3><p>The click's arrival at all 128 microphones is fit jointly across frequencies for a 60-mode correction to the mapped surface.</p></div>
         <div class="step"><em>04</em><h3>Refocus the image</h3><p>The corrected surface feeds the imaging reconstructor — the same click also illuminates the targets it now focuses.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="stats">
+        <div class="stat"><b>23 / 24</b><span>reflectors improved across the campaign</span></div>
+        <div class="stat"><b>+6.7 dB</b><span>best single-reflector focus gain over the mapper</span></div>
+        <div class="stat"><b>52 %</b><span>median share of the focus gap recovered per reflector</span></div>
+        <div class="stat"><b>1.00000</b><span>twin air-side propagation vs exact analytic oracle</span></div>
       </div>
     </section>
 
