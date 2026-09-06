@@ -42,6 +42,7 @@ a{color:var(--water);text-decoration:none}
 a:hover{text-decoration:underline}
 a:focus-visible,button:focus-visible{outline:2px solid var(--star);outline-offset:2px}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+main.wrap{padding-top:46px}
 .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--star-ink);margin:0 0 14px;font-weight:500}
 .lede{font-size:19px;line-height:1.6;color:var(--ink2);max-width:60ch}
@@ -68,7 +69,7 @@ nav{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 86%,
 .tab.on{color:var(--ink);border-bottom-color:var(--star)}
 /* ---------- hero ---------- */
 .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:44px;align-items:center;
-  padding:54px 0 8px}
+  padding:12px 0 8px}
 .hero img{width:100%;height:auto;display:block}
 .heroplate{background:var(--plate);border:1px solid var(--line);border-radius:10px;
   padding:14px;box-shadow:var(--shadow)}
@@ -122,6 +123,10 @@ figcaption b{color:var(--ink2);font-weight:620}
 .note{background:var(--water-soft);border:1px solid var(--line);border-radius:8px;
   padding:16px 20px;max-width:72ch}
 .note p:last-child{margin:0}
+.bigclaim{font-family:"Instrument Sans",sans-serif;font-size:22px;line-height:1.45;
+  color:var(--ink);margin:4px 0 20px;max-width:none;font-weight:560}
+.bigclaim b{color:var(--star-ink);font-size:30px;font-weight:700;
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
 /* ---------- tables ---------- */
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 table{border-collapse:collapse;width:100%;font-size:14px}
@@ -251,7 +256,7 @@ function Step({n,title,children}){
   return html`<div class="algostep"><div class="n">${n}</div>
     <div><h3>${title}</h3><div class="prose">${children}</div></div></div>`;
 }
-function Eq({name,h,alt}){ const st={height:h,width:"auto",maxWidth:"100%"}; return html`<div class="eq"><img class="ltonly" src=${IMG[name]} alt=${alt} style=${st}/><img class="dkonly" src=${IMG[name+"_d"]} alt=${alt} style=${st}/></div>`; }
+function Eq({name,w,alt}){ const st={width:w,maxWidth:"100%",height:"auto"}; return html`<div class="eq"><img class="ltonly" src=${IMG[name]} alt=${alt} style=${st}/><img class="dkonly" src=${IMG[name+"_d"]} alt=${alt} style=${st}/></div>`; }
 
 /* ------------------- campaign chart ------------------- */
 function CampaignChart(){
@@ -735,7 +740,7 @@ function Algorithm(){
         microphone hear? Answer: sum the click's field over every facet of the surface,
         each facet transmitting with its own geometry and radiating to the microphone —
         single scattering, but full diffraction:</p>
-        <${Eq} name="eq_forward" h=${58} alt="F_e(omega; h) equals the coherent sum over facets j of A_j times exp(i omega (water leg + air leg travel times)) times the facet area"/>
+        <${Eq} name="eq_forward" w=${376} alt="F_e(omega; h) equals the coherent sum over facets j of A_j times exp(i omega (water leg + air leg travel times)) times the facet area"/>
         <p>with water-leg and air-leg travel times per facet <i>j</i> and amplitude factors
         (spreading, transmission, obliquity) in <i>A</i><sub>j</sub>; stacking the model over
         microphones <i>e</i> at one frequency gives the vector <i>F</i><sub>ω</sub> used below. For speed and an exact
@@ -750,7 +755,7 @@ function Algorithm(){
       <${Step} n="3" title="Parameterize the unknown — 60 Fourier modes">
         <p>The correction is a smooth ripple field on a 15-cm-radius patch under the star,
         spanned by windowed Fourier modes with wavelengths from 4 to 17 cm:</p>
-        <${Eq} name="eq_screen" h=${68} alt="h(x) = h0(x) plus the sum over k from 1 to 60 of c_k phi_k(x)"/>
+        <${Eq} name="eq_screen" w=${260} alt="h(x) = h0(x) plus the sum over k from 1 to 60 of c_k phi_k(x)"/>
         <p>Only wavelengths the aperture can physically constrain are included — the patch
         size and the mode band were both set by measured transfer experiments, not
         convenience.</p>
@@ -760,21 +765,21 @@ function Algorithm(){
         than model it, solve it away: at each frequency the best complex gain α has a closed
         form, leaving a reduced misfit that depends on the surface alone (variable
         projection):</p>
-        <${Eq} name="eq_varpro" h=${74} alt="alpha-hat per frequency is the inner product of model and data over the model norm squared; the misfit M(c) is the normalized residual power summed over frequencies"/>
+        <${Eq} name="eq_varpro" w=${374} alt="alpha-hat per frequency is the inner product of model and data over the model norm squared; the misfit M(c) is the normalized residual power summed over frequencies"/>
         <p>This is why the star's waveform sits on the assumption ledger as "free."</p>
       <//>
       <${Step} n="5" title="Solve all frequencies jointly — the wrap ambiguity demands it">
         <p>At any <i>single</i> frequency the problem is exactly unsolvable: adding one
         acoustic period to a facet's delay changes nothing,</p>
-        <${Eq} name="eq_wrap" h=${42} alt="adding 2 pi n_j over omega to any facet delay leaves F_omega unchanged"/>
+        <${Eq} name="eq_wrap" w=${358} alt="adding 2 pi n_j over omega to any facet delay leaves F_omega unchanged"/>
         <p>so each frequency alone sees a lattice of impostor surfaces. But the lattices of
         <i>different</i> frequencies only intersect at the true surface. Every frequency
         therefore enters <b>one joint Gauss–Newton system</b>. Written out in full: stack
         the whitened residuals of all 40 frequencies across all 128 microphones into one
         vector, with its analytic Jacobian,</p>
-        <${Eq} name="eq_resid" h=${52} alt="r(c) stacks d_omega minus alpha-hat F_omega over all 40 frequencies, normalized by total data power; J is its analytic Jacobian in c"/>
+        <${Eq} name="eq_resid" w=${581} alt="r(c) stacks d_omega minus alpha-hat F_omega over all 40 frequencies, normalized by total data power; J is its analytic Jacobian in c"/>
         <p>and each damped Gauss–Newton iteration updates all sixty coefficients at once:</p>
-        <${Eq} name="eq_gnfull" h=${38} alt="c at step t+1 equals c at step t minus (J transpose J plus lambda_t I) inverse times J transpose r of c at step t, with lambda relaxing from 0.3 to 1e-3"/>
+        <${Eq} name="eq_gnfull" w=${576} alt="c at step t+1 equals c at step t minus (J transpose J plus lambda_t I) inverse times J transpose r of c at step t, with lambda relaxing from 0.3 to 1e-3"/>
         <p>After each update a wrap-resolving step re-wraps every facet delay onto the
         branch nearest the current solution, so the next linearization is taken in the
         right basin.</p>
@@ -830,6 +835,9 @@ function Results(){
   return html`<div>
     <${Eyebrow}>The campaign<//>
     <h2>Nine frames, twenty-four reflectors, nothing hidden</h2>
+    <p class="bigclaim">On the frames the estimator accepted, the guide star recovers a
+    median <b>52&thinsp;%</b> of the gap between the mapper's focus and true-surface
+    focus — reflector by reflector, out of sample.</p>
     <div class="prose wide1">
       <p>Protocol: the configuration was selected on <b>one</b> seed-8 frame — f11, marked
       "tuning frame" below — then frozen, and every other frame was scored
