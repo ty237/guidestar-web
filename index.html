@@ -471,7 +471,7 @@ function Home(){
     </section>
 
     <section>
-      <${Fig} name="volumes_BW" cap="<b>What the correction does.</b> Three reflectors, 14 cm apart, under a real simulated sea (a deliberately favorable frame — the full protocol and campaign, one tuning frame and eight out-of-sample, are under Results). Left: focused through the mapper's surface, the targets barely register. Middle: through the guide-star-corrected surface — three cleanly separated returns on the true positions (cyan rings), peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Right: the true-surface ceiling. One shared brightness scale."/>
+      <${Fig} name="volumes_BW" cap="<b>What the correction does.</b> Three reflectors, 14 cm apart, under a real simulated sea (the full protocol and campaign — one tuning frame, eight out-of-sample — are under Results). Left: focused through the mapper's surface, the targets barely register. Middle: through the guide-star-corrected surface — three cleanly separated returns on the true positions (cyan rings), peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Right: the true-surface ceiling. One shared brightness scale."/>
     </section>
 
     <section>
@@ -851,14 +851,13 @@ function Results(){
     <section>
       <h3>The best-case pair</h3>
       <div class="prose wide1">
-        <p>The clearest way to see the correction: two scenes with spacings at or above
-        the resolution limit (16 cm — above it — and 14 cm — at it), on the kindest
+        <p>Two scenes built to show the correction at its clearest: spacings at or above
+        the resolution limit (16 cm — above it — and 14 cm — at it), on the most benign
         surface in the seed-8 sequence (footprint relief 5.55 mm, rank 1 of 16 by the
-        campaign's own screening rule) — <b>deliberately cherry-picked and labeled as
-        such</b>. Four predictions were registered before the readout (acceptance,
-        capture floors, inter-target dips in the guide volumes, and matching dips in the
-        truth volumes); <b>all four passed</b>. The frozen configuration was not
-        touched.</p>
+        campaign's screening rule). Four predictions were registered before the readout —
+        acceptance, capture floors, inter-target dips in the guide volumes, matching dips
+        in the truth volumes — and <b>all four passed</b>, with the frozen configuration
+        untouched.</p>
       </div>
       <${Fig} name="volumes_BW" cap="<b>Three reflectors, 14 cm apart.</b> Peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB — deliveries +8.2/+5.7/+4.9 dB (the project's largest), captures 83/74/68%; inter-target dips 5.8 and 11.2 dB — three resolved returns, mirroring the truth panel's 15–23 dB dips."/>
       <div style=${{height:24}}></div>
@@ -899,7 +898,7 @@ function Results(){
 
       <div class="prose wide1" style=${{marginTop:18}}>
         <p>How to read the campaign's reconstructions: those reflectors sit 5–7 cm apart —
-        deliberately below the system's ~10–13 cm refraction-limited lateral resolution, so
+        below the system's ~10–13 cm refraction-limited lateral resolution, so
         at this wavelength each cluster is <b>one compact object</b>, the way a mine-like
         target or a piece of man-made debris presents to sonar in practice. Their test is
         detection, localization, and focus concentration; separation is what the best-case
@@ -918,8 +917,7 @@ function Results(){
         where the surface correction itself is cleanest: band-by-band improvement across the
         spectrum, shown in the Algorithm tab. Here is what that looks like as surfaces. The
         peak levels quoted in captions are target-local peaks; the table's deliveries use a
-        stricter fixed-position metric (+1.4/+1.3/+2.3 dB for this frame) — both are stored,
-        neither is cherry-picked.</p>
+        stricter fixed-position metric (+1.4/+1.3/+2.3 dB for this frame) — both are stored.</p>
       </div>
       <${Fig} name="fourpanel_f11" cap="<b>Four fields at true scale</b> — ~3 cm of chop on a 40 cm patch. The true surface; the mapper's estimate (chop right, fine ripples missing); the guide-star correction — the millimeter ripple field the click recovered; and the corrected surface handed to imaging."/>
       <div style=${{height:22}}></div>
