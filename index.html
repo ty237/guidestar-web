@@ -836,8 +836,8 @@ function Results(){
     <${Eyebrow}>The campaign<//>
     <h2>Nine frames, twenty-four reflectors, nothing hidden</h2>
     <p class="bigclaim">On the frames the estimator accepted, the guide star recovers a
-    median <b>52&thinsp;%</b> of the gap between the mapper's focus and true-surface
-    focus — reflector by reflector, out of sample.</p>
+    median <b>52 %</b> of the gap between the mapper's focus and true-surface
+    focus — across all 24 accepted reflector rows, including the tuning frame.</p>
     <div class="prose wide1">
       <p>Protocol: the configuration was selected on <b>one</b> seed-8 frame — f11, marked
       "tuning frame" below — then frozen, and every other frame was scored
@@ -847,7 +847,8 @@ function Results(){
       seed-8 — different seeds are different oceans), and frame tags index each scene's own
       wave sequence, so two scenes can each have an f5. <b>Capture</b> = the fraction of
       the mapper-to-truth focus gap recovered, per reflector; <b>delivery</b> = the same gain
-      in dB.</p>
+      in dB. Slash-separated values refer to individual reflectors, in the same order
+      in both columns.</p>
     </div>
 
     <div class="tblwrap"><table>
@@ -862,7 +863,7 @@ function Results(){
       </tr>`)}
       </tbody>
     </table></div>
-    <p style=${{marginTop:10}}><span class="mono" style=${{fontSize:"12.5px",color:"var(--muted)"}}>Denominators: 10 candidate frames scored, 9 accepted by the estimator's own flag, 24 reflector rows, 23 positive. n = 9 correlated frames — a mechanism demonstration, not a population estimate.</span></p>
+    <p style=${{marginTop:10}}><span class="mono" style=${{fontSize:"12.5px",color:"var(--muted)"}}>Denominators: 10 candidate frames scored, 9 accepted (1 tuning, 8 out-of-sample), 24 reflector rows, 23 positive. n = 9 correlated frames — a mechanism demonstration, not a population estimate.</span></p>
 
     <section>
       <${CampaignChart}/>
@@ -885,6 +886,17 @@ function Results(){
 
     <section>
       <h3>It generalizes: new geometries, same frozen algorithm</h3>
+      <div class="prose wide1">
+        <p>A note on how to read these panels: the reflectors sit 5–7 cm apart —
+        deliberately below the system's ~10–13 cm refraction-limited lateral resolution.
+        At this wavelength they are <b>one compact object</b>, which is exactly how a
+        mine-like target, a diver's tank, or a piece of man-made debris presents to sonar
+        in practice. The test is therefore not whether the reflectors separate (physics
+        says they cannot, at any display threshold) but whether their combined echo
+        collapses to a bright, compact return at the true positions instead of a
+        scattered haze — detection, localization, and focus, which is what the correction
+        delivers.</p>
+      </div>
       <${Fig} name="vol_f8" cap="<b>Geometry A (f8):</b> two adjacent reflectors. Peaks −8.9/−9.2 → −4.0/−2.5 dB against a −0.6/0.0 ceiling; scored deliveries +4.9/+6.7 dB — the campaign's largest gains."/>
       <div style=${{height:26}}></div>
       <${Fig} name="vol_f9" cap="<b>Geometry B (f9):</b> one reflector below the star, two off to the sides. Peaks −7.4/−8.7/−7.4 → −3.6/−4.2/−3.8 dB; captures 57/60/70% across all three."/>
@@ -981,8 +993,8 @@ function Rigor(){
         depth. Adjacent reflectors 5–7 cm apart are <i>not</i> individually resolved in any
         panel; claims are focus-at-known-positions, never separation. Bandwidth buys depth
         resolution (~1.5 cm), not lateral.</p>
-        <p><b>Small numbers.</b> Nine frames are nine correlated draws from one simulated
-        sea — a mechanism demonstration, not a population estimate. Score jitter under
+        <p><b>Small numbers.</b> The nine accepted frames include correlated surface realizations
+        across the tested seeds and geometries — a mechanism demonstration, not a population estimate. Score jitter under
         frame re-draws is uncharacterized, and the reference-surface repair that likely
         closes the remaining map-quality gap is designed but unrun.</p>
       </div>
