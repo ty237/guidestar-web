@@ -438,7 +438,7 @@ function Home(){
       <div>
         <${Eyebrow}>Airborne sonar · simulation study<//>
         <h1>The acoustic guide star: imaging through a moving water surface</h1>
-        <p class="lede">Waves distort sound as it crosses the water's surface, blurring sonar images of objects below. This project uses a brief underwater click as a reference, an <b>acoustic guide star</b>, to estimate that distortion and improve focus. The approach has been tested in physics simulations; real-water validation is still to come.</p>
+        <p class="lede">Waves distort sound as it crosses the water's surface, blurring sonar images of objects below. This project uses a brief underwater click as a reference, an <b>acoustic guide star</b>, to estimate that distortion and improve focus. The approach has been evaluated in physics simulations.</p>
       </div>
       <div class="heroplate"><img src=${IMG.hero} alt="Exploded view of the scene: microphone array in air, wavy water surface with guide-star read footprint, cavitation click, illuminated targets on the bottom"/><div class="mono" style=${{fontSize:"11px",color:"var(--muted)",paddingTop:8}}>scene stylized, campaign targets are cm-scale reflectors ~0.8 m deep</div></div>
     </div>
@@ -492,7 +492,7 @@ function Problem(){
     <h2>What airborne sonar is, and why it's worth the trouble</h2>
     <div class="prose wide">
       <p><b>Airborne sonar is sonar with everything in the air.</b> A flat array of 128
-      ultrasonic microphones and emitters hangs above the water (a gantry today, a drone eventually), aims straight down, and images what lies beneath: here, reflectors about <b>0.8 m below the surface</b>, seen from roughly a meter above it. Nothing touches
+      ultrasonic microphones and emitters hangs above the water (for example, mounted on a gantry or a drone), aims straight down, and images what lies beneath: here, reflectors about <b>0.8 m below the surface</b>, seen from roughly a meter above it. Nothing touches
       the water. No hull, no towfish, no diver, no submerged hardware of any kind.</p>
       <p>Why that matters: every existing way of seeing into water has to get wet or get
       lucky. Conventional sonar must be <i>in</i> the water (ships, towed bodies,
@@ -693,8 +693,7 @@ function Twin(){
         refinement at <span class="mono">0.9925</span>; every new geometry gets its own
         convergence check, because this failure mode gives no visible warning.</p>
         <p>Boundary of validity, stated plainly: the twin validates <i>in silico</i> claims.
-        Integrated observables transfer to hardware; the fine-band coherent chain ultimately
-        validates in water.</p>
+        These results do not establish the correction's performance in hardware.</p>
         </div>
       </div>
     </section>
@@ -976,8 +975,7 @@ function Rigor(){
       <h3>Limits</h3>
       <div class="prose wide">
         <p><b>All in-silico.</b> The twin is credentialed against exact oracles, but no
-        real-water data exists; the fine-band coherent chain ultimately validates in
-        water.</p>
+        real-water data exists for this correction method.</p>
         <p><b>Resolution is refraction-limited.</b> The air-side aperture compresses to an
         in-water numerical aperture of ~0.12, giving lateral resolution of roughly 10 to 13 cm at target
         depth. Adjacent reflectors 5-7 cm apart are <i>not</i> individually resolved in any
