@@ -143,6 +143,8 @@ tr.dim td{color:var(--muted);font-style:italic}
   font-weight:650;letter-spacing:.05em;padding:1.5px 8px;border-radius:99px;
   background:var(--star-soft);color:var(--star-ink);vertical-align:1px}
 /* ---------- chart ---------- */
+.chartscroll{overflow-x:auto}
+.chartscroll svg{min-width:800px}
 .chartbox{background:var(--surface);border:1px solid var(--line);border-radius:8px;
   padding:18px 16px 8px;position:relative}
 .charttitle{font-family:"Instrument Sans",sans-serif;font-size:14.5px;font-weight:620;margin:0 2px 2px}
@@ -192,6 +194,12 @@ hr{border:none;border-top:1px solid var(--line);margin:44px 0}
   .figrow,.figrow3{grid-template-columns:1fr}
   .algostep{grid-template-columns:40px 1fr;gap:12px}
 }
+@media (max-width:600px){
+  .navrow{height:auto;flex-wrap:wrap;gap:0;padding-top:12px}
+  .tabs{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-left:0}
+  .tab{font-size:13px;text-align:center;padding:10px 4px 8px}
+  .tip{left:50%!important;width:calc(100% - 24px);max-width:320px;white-space:normal}
+}
 @media (prefers-reduced-motion: no-preference){
   .tab,.figplate{transition:border-color .15s,color .15s}
 }
@@ -231,9 +239,9 @@ const CAMPAIGN = [
 ];
 const GATES = [
  {g:"Exact spectral oracle", m:"air-side propagation vs the closed-form angular-spectrum solution, flat interface", r:"correlation 1.0"},
- {g:"Sommerfeld oracle", m:"full solver vs the analytic half-space (Sommerfeld) solution — flat interface, where that solution is exact", r:"correlation 0.981"},
+ {g:"Sommerfeld oracle", m:"full solver vs the analytic half-space (Sommerfeld) solution; flat interface, where that solution is exact", r:"correlation 0.981"},
  {g:"Grid convergence", m:"1.0 mm vs 0.7 mm grids, agreement of the microphone traces", r:"correlation 0.9925"},
- {g:"Single-scatter check", m:"the estimator's Kirchhoff forward model vs the full-wave twin — model error, priced", r:"correlation 0.727"},
+ {g:"Single-scatter check", m:"the estimator's Kirchhoff forward model vs the full-wave twin; model error, priced", r:"correlation 0.727"},
  {g:"Production bridge", m:"twin data pushed through the real reconstruction pipeline vs native processing", r:"contrast ≈ 51 dB · position ≤ 12 mm"},
 ];
 
@@ -259,6 +267,7 @@ function Step({n,title,children}){
 function Eq({name,w,alt}){ const st={width:w,maxWidth:"100%",height:"auto"}; return html`<div class="eq"><img class="ltonly" src=${IMG[name]} alt=${alt} style=${st}/><img class="dkonly" src=${IMG[name+"_d"]} alt=${alt} style=${st}/></div>`; }
 
 /* ------------------- campaign chart ------------------- */
+function displayNumber(value){ return String(value).replace(/^-/,"−"); }
 function CampaignChart(){
   const [tip,setTip] = React.useState(null);
   const M={l:44,r:10,t:26,b:46}, H=210, ymax=100, ymin=-15;
@@ -278,11 +287,12 @@ function CampaignChart(){
     setTip({x:b.left-r.left+b.width/2, y:b.top-r.top-6,
       lines: f.refused
         ? [f.scene+" · "+f.tag, "REFUSED by self-flag (misfit 0.871)", "counterfactual delivery −1.0 dB"]
-        : [f.scene+" · "+f.tag+" · reflector "+(i+1), "capture "+row.c+"%  ·  delivery "+(row.d>0?"+":"")+row.d+" dB", "final misfit "+f.rel.toFixed(3)]});
+        : [f.scene+" · "+f.tag+" · reflector "+(i+1), "capture "+displayNumber(row.c)+"%  ·  delivery "+(row.d>0?"+":"")+displayNumber(row.d)+" dB", "final misfit "+f.rel.toFixed(3)]});
   };
   return html`<div class="chartbox">
-    <p class="charttitle">The campaign — 24 reflectors across 9 accepted frames, 23 improved</p>
+    <p class="charttitle">The campaign: 24 reflectors across 9 accepted frames, 23 improved</p>
     <p class="chartsub">Bar = one reflector: share of the mapper-to-truth focus gap recovered by the guide-star correction. Configuration frozen on one seed-8 frame (marked: tuning); every other frame scored out-of-sample.</p>
+    <div class="chartscroll" tabIndex="0" role="region" aria-label="Campaign chart; scroll horizontally to see all frames" onScroll=${()=>setTip(null)}>
     <svg viewBox=${"0 0 "+W+" "+(M.t+H+M.b)} style=${{width:"100%",display:"block"}} role="img"
          aria-label="Capture percentage per reflector across nine frames">
       ${ticks.map(t=>html`<g key=${t}>
@@ -314,7 +324,7 @@ function CampaignChart(){
                   onMouseEnter=${e=>show(e,f,row,i)} onMouseLeave=${()=>setTip(null)}/>
                 ${(row.c>=75||row.c<0)&&html`<text x=${bx+barW/2} y=${row.c>=0?top-5:y(row.c)+13}
                   text-anchor="middle" font-size="10.5" font-weight="500"
-                  font-family="IBM Plex Mono,monospace" fill="var(--ink2)">${row.c}</text>`}
+                  font-family="IBM Plex Mono,monospace" fill="var(--ink2)">${displayNumber(row.c)}</text>`}
               </g>`;})}
             ${(f.showcase||f.tuning)&&html`<text x=${x0+w/2} y=${M.t-8} text-anchor="middle" font-size="11"
               fill="var(--star-ink)" font-family="Instrument Sans,sans-serif" font-weight="650">${f.tuning?"tuning":"showcase"}</text>`}
@@ -322,8 +332,9 @@ function CampaignChart(){
               font-family="IBM Plex Mono,monospace" fill="var(--muted)">${f.tag}</text>
           </g>`)}
       <text x=${M.l+((W-M.l-M.r)/2)} y=${M.t+H+38} text-anchor="middle" font-size="11.5"
-        font-family="Instrument Sans,sans-serif" fill="var(--muted)">frames, in scoring order — collinear seed-8 · collinear seed-7 · geometry A · geometry B</text>
+        font-family="Instrument Sans,sans-serif" fill="var(--muted)">frames, in scoring order: collinear seed-8 · collinear seed-7 · geometry A · geometry B</text>
     </svg>
+    </div>
     ${tip&&html`<div class="tip" style=${{left:tip.x+"px",top:tip.y+"px"}}>
       ${tip.lines.map((l,i)=>html`<div key=${i}>${l}</div>`)}</div>`}
   </div>`;
@@ -332,13 +343,13 @@ function CampaignChart(){
 /* ------------------- scene navigator ------------------- */
 const SN = [
   {route:"problem", name:"The Problem",
-   blurb:"an airborne array listening into water — and the moving lens in the way"},
+   blurb:"an airborne array listening into water, and the moving lens in the way"},
   {route:"twin", name:"The Digital Twin",
    blurb:"a credentialed synthetic ocean where the true surface is known"},
   {route:"algorithm", name:"The Algorithm",
    blurb:"one click, inverted into a 60-mode surface correction"},
   {route:"results", name:"Results",
-   blurb:"the refocused image, scored across nine frames — eight of them out-of-sample"},
+   blurb:"the refocused image, scored across nine frames, eight of them out-of-sample"},
   {route:"rigor", name:"Rigor",
    blurb:"receipts: provenance, refusals, limits"},
 ];
@@ -370,14 +381,14 @@ function SceneNav(){
         ${[0,1,2].map(i=>html`<line key=${i} x1=${310+i*75} y1="62" x2=${330+i*60} y2="196"
           stroke="var(--muted)" stroke-dasharray="2 5" stroke-width="1" opacity="0.6"/>`)}
         <text class="hotlabel" x="556" y="53" font-size="14" font-weight="650"
-          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the array — start here</text>
+          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the array: start here</text>
       `)}
       ${hot(1, html`
         <path class="glow" d=${wavePath(206,9,26,0)+" L700 232 L70 232 Z"} fill="var(--star-soft)" stroke="none"/>
         <path d=${wavePath(206,8,26,0)} fill="none" stroke="var(--water)" stroke-width="2.6"/>
         <path d=${wavePath(216,5,17,2)} fill="none" stroke="var(--water)" stroke-width="1.4" opacity="0.55"/>
         <text class="hotlabel" x="76" y="188" font-size="14" font-weight="650"
-          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the living surface — the twin</text>
+          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the living surface: the twin</text>
       `)}
       ${hot(2, html`
         <circle class="glow" cx="385" cy="300" r="34" fill="var(--star-soft)"/>
@@ -385,7 +396,7 @@ function SceneNav(){
           fill="none" stroke="var(--star)" stroke-width=${2.2-i*0.6} opacity=${0.85-i*0.25}/>`)}
         <circle cx="385" cy="300" r="6.5" fill="var(--star)"/>
         <text class="hotlabel" x="425" y="296" font-size="14" font-weight="650"
-          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the guide star — the algorithm</text>
+          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the guide star: the algorithm</text>
       `)}
       ${hot(3, html`
         <rect class="glow" x="220" y="378" width="330" height="52" rx="10" fill="var(--star-soft)"/>
@@ -395,7 +406,7 @@ function SceneNav(){
           <ellipse cx=${cx} cy="404" rx="24" ry="9" fill="none" stroke="var(--ink)" opacity="0.25"/>
         </g>`)}
         <text class="hotlabel" x="556" y="400" font-size="14" font-weight="650"
-          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the image — results</text>
+          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the image: results</text>
       `)}
       ${hot(4, html`
         <rect class="glow" x="702" y="60" width="52" height="398" rx="8" fill="var(--star-soft)"/>
@@ -405,7 +416,7 @@ function SceneNav(){
         <text x="748" y="255" font-size="11.5" font-family="IBM Plex Mono,monospace"
           fill="var(--muted)" transform="rotate(90 748 255)">measured, not asserted</text>
         <text class="hotlabel" x="612" y="86" font-size="14" font-weight="650"
-          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the ruler — rigor</text>
+          font-family="Instrument Sans,sans-serif" fill="var(--star-ink)">the ruler: rigor</text>
       `)}
       <text x="52" y="120" font-size="12" font-family="IBM Plex Mono,monospace" fill="var(--muted)">AIR</text>
       <text x="52" y="330" font-size="12" font-family="IBM Plex Mono,monospace" fill="var(--water)">WATER</text>
@@ -415,7 +426,7 @@ function SceneNav(){
         onClick=${()=>{setHover(null);setActive((active+SN.length-1)%SN.length);}}>‹</button>
       <button class="snbtn" aria-label="next section"
         onClick=${()=>{setHover(null);setActive((active+1)%SN.length);}}>›</button>
-      <div class="snlegend"><b>${s.name}</b> — ${s.blurb}. <a href=${"#/"+s.route}>open →</a></div>
+      <div class="snlegend"><b>${s.name}</b>: ${s.blurb}. <a href=${"#/"+s.route}>open →</a></div>
     </div>
   </div>`;
 }
@@ -426,25 +437,24 @@ function Home(){
     <div class="hero">
       <div>
         <${Eyebrow}>Airborne sonar · imaging through a moving water surface<//>
-        <h1>The acoustic guide star: imaging through a dynamic air–water interface</h1>
+        <h1>The acoustic guide star: imaging through a dynamic air-water interface</h1>
         <p class="lede">A laser-made cavitation click beneath the surface acts as an <b>acoustic guide star</b>: one click, fired at a known depth and time and heard through the waves by a
         128-microphone array in the air, reveals how the surface is bending
-        the rays — so the sonar image underneath can be refocused. Borrowed from
+        the rays, so the sonar image underneath can be refocused. Borrowed from
         astronomy. Pointed down.</p>
       </div>
-      <div class="heroplate"><img src=${IMG.hero} alt="Exploded view of the scene: microphone array in air, wavy water surface with guide-star read footprint, cavitation click, illuminated targets on the bottom"/><div class="mono" style=${{fontSize:"11px",color:"var(--muted)",paddingTop:8}}>scene stylized — campaign targets are cm-scale reflectors ~0.8 m deep</div></div>
+      <div class="heroplate"><img src=${IMG.hero} alt="Exploded view of the scene: microphone array in air, wavy water surface with guide-star read footprint, cavitation click, illuminated targets on the bottom"/><div class="mono" style=${{fontSize:"11px",color:"var(--muted)",paddingTop:8}}>scene stylized, campaign targets are cm-scale reflectors ~0.8 m deep</div></div>
     </div>
 
     <section>
       <h2>What is airborne sonar?</h2>
       <div class="prose wide1">
         <p><b>Airborne sonar is sonar that never touches the water</b>: an ultrasonic
-        array in the air looks straight down and images what lies beneath the surface —
+        array in the air looks straight down and images what lies beneath the surface:
         no hull, no towed body, no diver. It matters because every alternative must
         either enter the water or count on it being clear and calm: conventional sonar can't reach the shallows, surf zones,
         floods, or under-ice water where searching matters most, and cameras or lidar
-        are blinded the moment the water turns murky or choppy. The classic objection —
-        99.9 % of sound reflects off the air–water boundary — turns out to be survivable
+        are blinded the moment the water turns murky or choppy. The classic objection, that 99.9 % of sound reflects off the air-water boundary, turns out to be survivable
         with a large coherent array. The barrier that actually remains is that the
         boundary <i>moves</i>, and this project is about removing it.</p>
         <p><${Deeper} to="problem">The full background: what airborne sonar is, what it replaces, and why the surface is the real problem<//></p>
@@ -453,10 +463,10 @@ function Home(){
 
     <section>
       <div class="steps">
-        <div class="step"><em>01</em><h3>Map the surface</h3><p>An acoustic surface mapper estimates the water surface — accurate at long wavelengths, blind in exactly the bands that destroy focus.</p></div>
+        <div class="step"><em>01</em><h3>Map the surface</h3><p>An acoustic surface mapper estimates the water surface. It is accurate at long wavelengths and blind in exactly the bands that destroy focus.</p></div>
         <div class="step"><em>02</em><h3>Fire the star</h3><p>A focused laser pulse makes a cavitation bubble ~0.5 m down: a known, point-like, broadband click on the far side of the waves.</p></div>
         <div class="step"><em>03</em><h3>Invert the screen</h3><p>The click's arrival at all 128 microphones is fit jointly across frequencies for a 60-mode correction to the mapped surface.</p></div>
-        <div class="step"><em>04</em><h3>Refocus the image</h3><p>The corrected surface feeds the imaging reconstructor — the same click also illuminates the targets it now focuses.</p></div>
+        <div class="step"><em>04</em><h3>Refocus the image</h3><p>The corrected surface feeds the imaging reconstructor; the same click also illuminates the targets it now focuses.</p></div>
       </div>
     </section>
 
@@ -470,19 +480,19 @@ function Home(){
     </section>
 
     <section>
-      <${Fig} name="volumes_BW" cap="<b>What the correction does.</b> Three reflectors, 14 cm apart, under a real simulated sea (the full protocol and campaign — one tuning frame, eight out-of-sample — are under Results). Left: focused through the mapper's surface, the targets barely register. Middle: through the guide-star-corrected surface — three cleanly separated returns on the true positions (cyan rings), peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Right: the true-surface ceiling. One shared brightness scale."/>
+      <${Fig} name="volumes_BW" cap="<b>What the correction does.</b> Three reflectors, 14 cm apart, under a real simulated sea (the full protocol and campaign, one tuning frame and eight out-of-sample, are under Results). Left: focused through the mapper's surface, the targets barely register. Middle: through the guide-star-corrected surface: three cleanly separated returns on the true positions (cyan rings), peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Right: the true-surface ceiling. One shared brightness scale."/>
     </section>
 
     <section>
       <h2>Explore the system</h2>
       <p class="prose" style=${{color:"var(--ink2)"}}>The site is organized the way the scene
-      is: hover any element — the array, the surface, the star, the targets, the ruler — or
+      is: hover any element (the array, the surface, the star, the targets, the ruler) or
       step through with the arrows.</p>
       <${SceneNav}/>
     </section>
 
     <section>
-      <div class="banner"><b>IN-SILICO VALIDATION</b> — every result on this site comes from a
+      <div class="banner"><b>IN-SILICO VALIDATION:</b> every result on this site comes from a
       credentialed digital twin; no real-water data exists yet. Best frames are labeled <b>showcase</b>; every candidate frame scored is reported, including refusals and the
       one negative row.</div>
     </section>
@@ -492,34 +502,33 @@ function Home(){
 function Problem(){
   return html`<div>
     <${Eyebrow}>Background · the problem<//>
-    <h2>What airborne sonar is — and why it's worth the trouble</h2>
+    <h2>What airborne sonar is, and why it's worth the trouble</h2>
     <div class="prose wide">
       <p><b>Airborne sonar is sonar with everything in the air.</b> A flat array of 128
-      ultrasonic microphones and emitters hangs above the water — on a gantry today, a drone
-      eventually — aims straight down, and images what lies beneath: here, reflectors about <b>0.8 m below the surface</b>, seen from roughly a meter above it. Nothing touches
+      ultrasonic microphones and emitters hangs above the water (a gantry today, a drone eventually), aims straight down, and images what lies beneath: here, reflectors about <b>0.8 m below the surface</b>, seen from roughly a meter above it. Nothing touches
       the water. No hull, no towfish, no diver, no submerged hardware of any kind.</p>
       <p>Why that matters: every existing way of seeing into water has to get wet or get
-      lucky. Conventional sonar must be <i>in</i> the water — ships, towed bodies,
-      autonomous submersibles — which means slow deployment, drafts too deep for the
+      lucky. Conventional sonar must be <i>in</i> the water (ships, towed bodies,
+      autonomous submersibles), which means slow deployment, drafts too deep for the
       shallows, and equipment risk in exactly the places searching matters most: surf
       zones, floodwater, under ice, harbors. Optical methods (cameras, lidar) stay dry but
-      need the water clear and the surface calm — turbidity and chop blind them almost
+      need the water clear and the surface calm; turbidity and chop blind them almost
       immediately. A sensor that <i>flies</i> and still sees acoustically would combine
       sonar's indifference to murky water with an aircraft's reach: shallow-water search
       and rescue, survey and inspection from above, imaging where no boat can go.</p>
       <p>The reason such a thing barely exists is the number everyone learns first: air and
       water are about the most acoustically mismatched pair of everyday media there is, so
-      roughly <b>99.9 % of sound energy reflects off the boundary</b> — a ~30 dB loss each
-      way, ~60 dB round trip. That wall scared the field off for decades. It is, however,
+      roughly <b>99.9 % of sound energy reflects off the boundary</b>, a ~30 dB loss each
+      way and ~60 dB round trip. That wall scared the field off for decades. It is, however,
       survivable: a large, sensitive array processed coherently claws the round-trip loss
       back, and everything on this site takes that part of the program as given.</p>
-      <p>What is <i>not</i> given — the barrier this project exists for — is that the
+      <p>What is <i>not</i> given, and the barrier this project exists for, is that the
       boundary <b>moves</b>. A real water surface is alive: centimeter-high waves with
-      structure from a few centimeters up to ~40 cm — including the 4–8 cm band that does
+      structure from a few centimeters up to ~40 cm, including the 4-8 cm band that does
       the damage. To a sound wave crossing it, the surface
-      is a <b>moving, corrugated lens</b> — every echo picks up a different pattern of
+      is a <b>moving, corrugated lens</b>: every echo picks up a different pattern of
       delays on the way down and again on the way up. Uncorrected, focus simply falls
-      apart: in the frame shown across this site, target peaks land 5–7 dB down and the
+      apart: in the frame shown across this site, target peaks land 5-7 dB down and the
       lost energy reappears as clutter that can outshine the targets. On a mirror-calm tank
       none of this matters; on any real body of water, correcting the surface is the
       difference between a laboratory demonstration and an instrument. That correction is
@@ -533,44 +542,44 @@ function Problem(){
     <section>
       <h3>What the mapper can and cannot see</h3>
       <div class="prose wide1">
-        <p>The array can measure the surface acoustically — that is the lab's <b>surface
+        <p>The array can measure the surface acoustically; that is the lab's <b>surface
         mapper</b>, and it works well at long wavelengths. But focus is destroyed by a
         specific short-wavelength window: surface structure between roughly <b>4 and 8 cm</b>, comparable to the acoustic wavelength itself. There the mapper degrades from
-        imperfect to <i>worse than useless</i> — below 6 cm its map is less accurate than
+        imperfect to <i>worse than useless</i>. Below 6 cm its map is less accurate than
         assuming the water is flat:</p>
       </div>
       <div style=${{marginTop:28}}></div>
-      <${Fig} name="mapper_bands" cap="<b>The mapper alone, band by band</b> (headline frame). Each bar: how much of that wavelength band's true surface content the map captures — 100% is perfect, 0% is no better than assuming flat water, negative is worse than flat. Long waves are measured well; in the finest bands of the damaging window (below ~6 cm) the map fails outright (−1 to −16%)."/>
+      <${Fig} name="mapper_bands" cap="<b>The mapper alone, band by band</b> (headline frame). Each bar: how much of that wavelength band's true surface content the map captures, 100% is perfect, 0% is no better than assuming flat water, negative is worse than flat. Long waves are measured well; in the finest bands of the damaging window (below ~6 cm) the map fails outright (−1 to −16%)."/>
       <div class="prose wide1" style=${{marginTop:16}}>
         <p>Why can't a better mapper fix this? Two measured dead ends. A single microphone's
-        phase averages the surface over its ~7 cm Fresnel zone — which <b>low-passes away
-        exactly the 4–6 cm band</b> before any algorithm sees it. And solving for the surface
+        phase averages the surface over its ~7 cm Fresnel zone, which <b>low-passes away
+        exactly the 4-6 cm band</b> before any algorithm sees it. And solving for the surface
         from echo data linearly fails at real wave heights: centimeter waves impose
         multi-radian phase patterns whose products alias through the 21 mm microphone spacing
         (a linear inversion recovers the screen fine at quarter amplitude and essentially
         nothing at full amplitude). The missing band must be sensed <i>through</i> the surface,
-        nonlinearly, by the whole aperture at once — which requires a known sound on the far
+        nonlinearly, by the whole aperture at once, which requires a known sound on the far
         side.</p>
       </div>
     </section>
 
     <section class="figrow">
-      <${Fig} name="eso" cap="<b>The inspiration.</b> Astronomy hit this exact wall decades ago: the atmosphere scrambles starlight before it reaches the telescope. The fix — adaptive optics — fires lasers upward to make an artificial <b>guide star</b>, a known point source whose distorted image reveals the scrambling, which is then subtracted. Here: the four laser guide stars of ESO's Very Large Telescope. Credit: ESO/F. Kamphues (CC BY 4.0)."/>
+      <${Fig} name="eso" cap="<b>The inspiration.</b> Astronomy hit this exact wall decades ago: the atmosphere scrambles starlight before it reaches the telescope. The fix, adaptive optics, fires lasers upward to make an artificial <b>guide star</b>, a known point source whose distorted image reveals the scrambling, which is then subtracted. Here: the four laser guide stars of ESO's Very Large Telescope. Credit: ESO/F. Kamphues (CC BY 4.0)."/>
       <div>
         <h3>The same trick, pointed down</h3>
         <div class="prose">
           <p>Our atmosphere is the water surface; our guide star is a <b>laser-induced
           cavitation click</b> ~0.5 m deep. A focused pulse boils a microscopic bubble whose
-          collapse is a point-like, broadband snap — and because the laser made it, its firing
+          collapse is a point-like, broadband snap, and because the laser made it, its firing
           time is known to nanoseconds and its depth is set by the optics. Its wavefront,
           recorded across all 128 microphones, has passed through the <i>exact surface</i> the
           images must be corrected for.</p>
           <p>The click is <b>dual-use</b>: the same pulse that calibrates the surface also
-          insonifies the targets. The calibration shot <i>is</i> the imaging shot — no
+          insonifies the targets. The calibration shot <i>is</i> the imaging shot: no
           separate calibration pass, no stale surface estimate.</p>
           <p>What the star assumes is explicit and priced: depth (from the optics), time zero
           (from the laser), a loose lateral prior (the click localizes itself acoustically),
-          and <b>nothing about its waveform</b> — the algorithm eliminates the waveform
+          and <b>nothing about its waveform</b>; the algorithm eliminates the waveform
           exactly, per frequency, so an ugly or shot-to-shot-varying click costs nothing.</p>
         </div>
       </div>
@@ -580,10 +589,10 @@ function Problem(){
       <div>
         <h3>Could the star be made for real?</h3>
         <div class="prose">
-          <p>Yes — with a bench-scale laser. A frequency-doubled Nd:YAG at 532 nm
-          (water's transparency window; the 0.5 m path absorbs ~3%) delivering 100–300 mJ in
-          ~6 ns reaches optical-breakdown intensity with 2–20× margin through a modest lens.
-          The real adversary is the wavy surface acting as a random lens on the <i>light</i> — and the design answer is to keep the beam's footprint on the
+          <p>Yes, with a bench-scale laser. A frequency-doubled Nd:YAG at 532 nm
+          (water's transparency window; the 0.5 m path absorbs ~3%) delivering 100-300 mJ in
+          ~6 ns reaches optical-breakdown intensity with 2-20× margin through a modest lens.
+          The real adversary is the wavy surface acting as a random lens on the <i>light</i>. The design answer is to keep the beam's footprint on the
           surface smaller than the shortest ripple, so the surface can only steer the focus
           (recoverable; the array measures where each click actually happened) rather than
           shatter it (fatal). Naval-research groups have demonstrated this class of
@@ -591,7 +600,7 @@ function Problem(){
           same surface this system already measures.</p>
         </div>
       </div>
-      <div style=${{maxWidth:340,margin:"0 auto"}}><${Fig} name="laser_tank" cap="<b>The geometry of the source, in a laboratory.</b> A laser beam crossing a water tank (photo: Gregory Heath / CSIRO, CC BY 3.0 — a fluid-dynamics facility, shown for the optics geometry). The naval laser-acoustic demonstrations referenced in the text used intense pulsed beams focused beneath the surface."/></div>
+      <div style=${{maxWidth:340,margin:"0 auto"}}><${Fig} name="laser_tank" cap="<b>The geometry of the source, in a laboratory.</b> A laser beam crossing a water tank (photo: Gregory Heath / CSIRO, CC BY 3.0; a fluid-dynamics facility, shown for the optics geometry). The naval laser-acoustic demonstrations referenced in the text used intense pulsed beams focused beneath the surface."/></div>
     </section>
   </div>`;
 }
@@ -602,24 +611,24 @@ function Twin(){
     <h2>Ground truth you can cross-examine</h2>
     <div class="prose wide">
       <p>Testing a surface-correction algorithm requires knowing the true surface, the true
-      targets, and the true sound field — which no water tank provides during development. So
+      targets, and the true sound field, which no water tank provides during development. So
       every claim on this site is tested inside a <b>digital twin</b>: a physics simulation of
       the entire scene, built to be trustworthy enough to referee.</p>
       <p>To be clear about what it is: <b>nothing in the twin is trained, fitted, or
       learned</b>. It numerically integrates the acoustic wave equation from first principles
-      over the measured geometry — the real array layout, real bandwidths, ocean-spectrum
+      over the measured geometry: the real array layout, real bandwidths, ocean-spectrum
       surfaces. Its accuracy comes from calibration against mathematics, not data: each
       subsystem is gated against a closed-form analytic solution or a convergence criterion
       before anything downstream is believed.</p>
     </div>
 
     <section class="figrow">
-      <${Fig} name="twin_schematic" cap="<b>The hybrid architecture.</b> A full-wave pseudospectral solver (j-Wave, GPU) owns the hard region — the water column, the living interface, the click, the targets (hatched: absorbers). From a capture plane just above the surface, an exact angular-spectrum method carries the field through air to the 128-microphone array. Compute is spent where physics is hard; closed-form propagation is used where it is provably exact."/>
-      <${Fig} name="twin_field" cap="<b>One click, live</b> — three instants from the twin's field video (a slice through the click; range-compensated view). Left: the click's spherical wave, freshly born at 47 cm depth. Middle (≈0.25 ms): the up-going front nears the moving surface while the down-going front passes the reflectors. Right (≈0.85 ms): echo arcs rise from the reflectors while the corrugated air field climbs to the capture plane. Dashed green: capture plane; orange dot: the click; rings: reflectors. Depth is measured from the array — the surface sits near 100 cm, the click 47 cm below it."/>
+      <${Fig} name="twin_schematic" cap="<b>The hybrid architecture.</b> A full-wave pseudospectral solver (j-Wave, GPU) owns the hard region: the water column, the living interface, the click, the targets (hatched: absorbers). From a capture plane just above the surface, an exact angular-spectrum method carries the field through air to the 128-microphone array. Compute is spent where physics is hard; closed-form propagation is used where it is provably exact."/>
+      <${Fig} name="twin_field" cap="<b>One click, live:</b> three instants from the twin's field video (a slice through the click; range-compensated view). Left: the click's spherical wave, freshly born at 47 cm depth. Middle (≈0.25 ms): the up-going front nears the moving surface while the down-going front passes the reflectors. Right (≈0.85 ms): echo arcs rise from the reflectors while the corrugated air field climbs to the capture plane. Dashed green: capture plane; orange dot: the click; rings: reflectors. Depth is measured from the array; the surface sits near 100 cm, the click 47 cm below it."/>
     </section>
 
     <section>
-      <${Fig} name="sea_gallery" cap="<b>The twin's oceans:</b> two independent surface draws (different random seeds), 40 cm patches at true vertical scale, ~3 cm of chop. Within one sequence the sea advances in 5 ms steps — effectively frozen over a single click's flight — so surface diversity comes from independent draws, not from time."/>
+      <${Fig} name="sea_gallery" cap="<b>The twin's oceans:</b> two independent surface draws (different random seeds), 40 cm patches at true vertical scale, ~3 cm of chop. Within one sequence the sea advances in 5 ms steps, effectively frozen over a single click's flight, so surface diversity comes from independent draws, not from time."/>
     </section>
 
     <section>
@@ -628,8 +637,8 @@ function Twin(){
         <p>A <b>frame</b> is one complete synthetic experiment: one realization of a wavy
         ocean-spectrum surface, one guide-star click fired beneath it, the full pressure field
         integrated on a millimeter grid, and all 128 microphone traces recorded at the array.
-        One frame takes about <b>2 hours on an NVIDIA A100</b>. The campaign's frames — with
-        their raw wavefields, estimator inputs, and every score — are archived and
+        One frame takes about <b>2 hours on an NVIDIA A100</b>. The campaign's frames, with
+        their raw wavefields, estimator inputs, and every score, are archived and
         checksummed and cataloged, so future algorithms can be tested on the identical scenes without
         regenerating anything.</p>
       </div>
@@ -647,8 +656,8 @@ function Twin(){
         </tbody>
       </table></div>
       <div style=${{marginTop:12}} class="prose wide1"><p>Every row is a comparison
-      against something that cannot be argued with — a closed-form solution or a refinement
-      of the solver itself. One row is deliberately imperfect: the <b>Kirchhoff gate</b> (0.727) prices the estimator's single-scatter model error rather than hiding it — the
+      against something that cannot be argued with: a closed-form solution or a refinement
+      of the solver itself. One row is deliberately imperfect: the <b>Kirchhoff gate</b> (0.727) prices the estimator's single-scatter model error rather than hiding it. The
       algorithm is honest about being simpler than the world it inverts, and that is why
       even a perfect surface leaves a large residual misfit.</p></div>
     </section>
@@ -658,7 +667,7 @@ function Twin(){
       <${Eyebrow}>How it got this way<//>
       <h2>The failures that shaped it</h2>
       <div class="prose wide1">
-        <p>The twin's final form is the residue of its failures — each design choice above
+        <p>The twin's final form is the residue of its failures: each design choice above
         exists because a verification step caught something wrong. The two that shaped
         everything:</p>
       </div>
@@ -667,27 +676,27 @@ function Twin(){
     <section>
       <h3>1 · The step that couldn't be a step</h3>
       <div class="prose wide1">
-        <p>The first interface was rasterized hard — every grid cell all-water or all-air.
+        <p>The first interface was rasterized hard: every grid cell all-water or all-air.
         It failed the Sommerfeld oracle <i>even on flat water</i> (correlation 0.906), and the
-        reason is baked into how a pseudospectral solver works: it represents every field —
-        including the sound-speed and density maps — on a <b>truncated Fourier basis</b>, so anything on the grid must be expressible as a finite sum of smooth sinusoids. A
+        reason is baked into how a pseudospectral solver works: it represents every field,
+        including the sound-speed and density maps, on a <b>truncated Fourier basis</b>, so anything on the grid must be expressible as a finite sum of smooth sinusoids. A
         step discontinuity cannot be: its Fourier coefficients decay only as <span class="mono">O(1/k)</span>, so no finite truncation converges to the jump.
-        Instead the reconstruction exhibits the <b>Gibbs phenomenon</b> — persistent
+        Instead the reconstruction exhibits the <b>Gibbs phenomenon</b>: persistent
         ringing near the discontinuity with an overshoot (~9 % of the jump) that never
-        shrinks as more terms are added, only narrows — and the part of the step's spectrum
+        shrinks as more terms are added, only narrows, and the part of the step's spectrum
         beyond the grid's <b>Nyquist wavenumber</b> <b>aliases</b> back into resolvable
-        wavenumbers as spurious field content. A hard air–water jump therefore radiates
+        wavenumbers as spurious field content. A hard air-water jump therefore radiates
         numerical artifacts by construction. The fix is to <i>mollify</i> the
         discontinuity: the sigmoid blend below replaces the step with a smooth transition
         whose Fourier coefficients decay rapidly, keeping the interface effectively
         band-limited within what the grid can represent. Sweeping the blend width τ against
-        the oracle measured the timing bias this smoothing introduces (~3–4 µs per extra
+        the oracle measured the timing bias this smoothing introduces (~3-4 µs per extra
         mm, 0.71 µs at the chosen τ = 1 mm), which fixed τ = 1 mm and restored the gate to
         0.981.</p>
       </div>
       <div class="figrow3" style=${{marginTop:18}}>
-        <${Fig} name="sigmoid_a" cap="<b>Hard rasterization.</b> Every 1 mm cell is all-water or all-air — a staircase a spectral solver cannot represent. Fails the analytic oracle even on flat water (correlation 0.906)."/>
-        <${Fig} name="sigmoid_b" cap="<b>Sigmoid blend.</b> Near-surface cells take mixed properties, w = σ((h−z)/τ) with τ = 1 mm — passes the oracle (correlation 0.981, 0.71 µs timing bias; the bias grows ~3–4 µs per extra mm of τ, fixing τ = 1 mm)."/>
+        <${Fig} name="sigmoid_a" cap="<b>Hard rasterization.</b> Every 1 mm cell is all-water or all-air, a staircase a spectral solver cannot represent. Fails the analytic oracle even on flat water (correlation 0.906)."/>
+        <${Fig} name="sigmoid_b" cap="<b>Sigmoid blend.</b> Near-surface cells take mixed properties, w = σ((h−z)/τ) with τ = 1 mm; it passes the oracle (correlation 0.981, 0.71 µs timing bias; the bias grows ~3-4 µs per extra mm of τ, fixing τ = 1 mm)."/>
         <${Fig} name="sigmoid_c" cap="<b>One column, cell by cell</b> (the outlined column): the continuous blend (solid) replaces the true step (dashed); the transition spans ±3τ ≈ 6 cells."/>
       </div>
     </section>
@@ -696,7 +705,7 @@ function Twin(){
       <div>
         <h3>2 · The lesson that named the twin</h3>
         <div class="prose wide">
-        <p>An un-converged spectral simulation does not look wrong — it produces plausible
+        <p>An un-converged spectral simulation does not look wrong; it produces plausible
         fields whose fine detail is a deterministic artifact of the grid. The legacy
         configuration correlated at <span class="mono">0.028</span> with the converged answer
         while looking perfectly sensible. The production grid (1.0 mm) agrees with a 0.7 mm
@@ -717,27 +726,27 @@ function Algorithm(){
     <h2>From 128 raw traces to a corrected surface</h2>
     <div class="prose wide1">
       <p><b>Input:</b> the 128 microphone recordings of one guide-star click; the mapper's
-      surface estimate <i>h</i>₀(<i>x,y</i>); the star's position and firing time. <b>Output:</b> a corrected surface patch — <i>h</i>₀ plus a 60-mode ripple correction —
+      surface estimate <i>h</i>₀(<i>x,y</i>); the star's position and firing time. <b>Output:</b> a corrected surface patch, <i>h</i>₀ plus a 60-mode ripple correction,
       handed to the imaging reconstructor, together with a self-assessment that can <b>refuse</b> the frame. Everything below is one coherent least-squares problem; the
       steps are how it stays solvable.</p>
     </div>
 
     <section>
-      <${Fig} name="screen_eq" cap="<b>The whole algorithm computes one object.</b> The true surface (left, headline frame) decomposes into the mapper's estimate h₀ plus a correction — the <b>phase screen</b> δh, a smooth ripple field on the patch expanded in 60 windowed Fourier modes φ₁…φ₆₀ (bottom: three of them, from the longest 17 cm wavelength to the finest 4 cm). The screen shown is the one actually recovered for this frame. Every step below exists only to estimate the sixty coefficients c₁…c₆₀ from one click."/>
+      <${Fig} name="screen_eq" cap="<b>The whole algorithm computes one object.</b> The true surface (left, headline frame) decomposes into the mapper's estimate h₀ plus a correction, the <b>phase screen</b> δh, a smooth ripple field on the patch expanded in 60 windowed Fourier modes φ₁…φ₆₀ (bottom: three of them, from the longest 17 cm wavelength to the finest 4 cm). The screen shown is the one actually recovered for this frame. Every step below exists only to estimate the sixty coefficients c₁…c₆₀ from one click."/>
     </section>
 
     <section>
       <${Step} n="1" title="Isolate the star's direct arrival">
         <p>Each trace is gated around the click's first arrival through the surface
         (the same recording's later target echoes are used by imaging, not by the surface
-        solve — and the gate is kept clear of them). This is the data <i>d</i>: 128 complex
-        spectra across the click's 24–76 kHz band, 40 frequencies.</p>
+        solve, and the gate is kept clear of them). This is the data <i>d</i>: 128 complex
+        spectra across the click's 24-76 kHz band, 40 frequencies.</p>
       <//>
-      <${Step} n="2" title="Model the crossing — a Kirchhoff surface integral">
+      <${Step} n="2" title="Model the crossing: a Kirchhoff surface integral">
         <p>The forward model asks: given a candidate surface <i>h</i>, what would each
         microphone hear? Answer: sum the click's field over every facet of the surface,
-        each facet transmitting with its own geometry and radiating to the microphone —
-        single scattering, but full diffraction:</p>
+        each facet transmitting with its own geometry and radiating to the microphone.
+        Single scattering, but full diffraction:</p>
         <${Eq} name="eq_forward" w=${376} alt="F_e(omega; h) equals the coherent sum over facets j of A_j times exp(i omega (water leg + air leg travel times)) times the facet area"/>
         <p>with water-leg and air-leg travel times per facet <i>j</i> and amplitude factors
         (spreading, transmission, obliquity) in <i>A</i><sub>j</sub>; stacking the model over
@@ -748,60 +757,60 @@ function Algorithm(){
       <//>
       <div class="figrow" style=${{margin:"26px 0"}}>
         <${Fig} name="kirchhoff_geom" cap="<b>The physical picture:</b> the click (star) illuminates the wavy surface; every facet re-radiates coherently to each microphone. One highlighted path of the thousands summed. (In the figure's legend a facet is one 'quadrature cell'; E is the microphone count.)"/>
-        <${Fig} name="kirchhoff_screen" cap="<b>The solver's picture:</b> geometry frozen on the smooth reference surface; the unknown fine ripple enters only as a phase screen — a local delay at each facet. This is what makes the Jacobian analytic. (The dashed 'ghost' outline in the figure is simply the physical interface drawn for reference.)"/>
+        <${Fig} name="kirchhoff_screen" cap="<b>The solver's picture:</b> geometry frozen on the smooth reference surface; the unknown fine ripple enters only as a phase screen, a local delay at each facet. This is what makes the Jacobian analytic. (The dashed 'ghost' outline in the figure is simply the physical interface drawn for reference.)"/>
       </div>
-      <${Step} n="3" title="Parameterize the unknown — 60 Fourier modes">
+      <${Step} n="3" title="Parameterize the unknown: 60 Fourier modes">
         <p>The correction is a smooth ripple field on a 15-cm-radius patch under the star,
         spanned by windowed Fourier modes with wavelengths from 4 to 17 cm:</p>
         <${Eq} name="eq_screen" w=${260} alt="h(x) = h0(x) plus the sum over k from 1 to 60 of c_k phi_k(x)"/>
-        <p>Only wavelengths the aperture can physically constrain are included — the patch
+        <p>Only wavelengths the aperture can physically constrain are included; the patch
         size and the mode band were both set by measured transfer experiments, not
         convenience.</p>
       <//>
       <${Step} n="4" title="Eliminate the unknown waveform exactly">
-        <p>The click's spectrum is a nuisance — cavitation snaps vary shot to shot. Rather
+        <p>The click's spectrum is a nuisance: cavitation snaps vary shot to shot. Rather
         than model it, solve it away: at each frequency the best complex gain α has a closed
         form, leaving a reduced misfit that depends on the surface alone (variable
         projection):</p>
         <${Eq} name="eq_varpro" w=${374} alt="alpha-hat per frequency is the inner product of model and data over the model norm squared; the misfit M(c) is the normalized residual power summed over frequencies"/>
         <p>This is why the star's waveform sits on the assumption ledger as "free."</p>
       <//>
-      <${Step} n="5" title="Solve all frequencies jointly — the wrap ambiguity demands it">
+      <${Step} n="5" title="Solve all frequencies jointly: the wrap ambiguity demands it">
         <p>At any <i>single</i> frequency the problem is exactly unsolvable: adding one
         acoustic period to a facet's delay changes nothing,</p>
         <${Eq} name="eq_wrap" w=${358} alt="adding 2 pi n_j over omega to any facet delay leaves F_omega unchanged"/>
         <p>so each frequency alone sees a lattice of impostor surfaces. But the lattices of <i>different</i> frequencies only intersect at the true surface. Every frequency
-        therefore enters <b>one joint Gauss–Newton system</b>. Written out in full: stack
+        therefore enters <b>one joint Gauss-Newton system</b>. Written out in full: stack
         the normalized residuals of all 40 frequencies across all 128 microphones into one
         vector, with its analytic Jacobian,</p>
         <${Eq} name="eq_resid" w=${581} alt="r(c) stacks d_omega minus alpha-hat F_omega over all 40 frequencies, normalized by total data power; J is its analytic Jacobian in c"/>
-        <p>and each damped Gauss–Newton iteration updates all sixty coefficients at once:</p>
+        <p>and each damped Gauss-Newton iteration updates all sixty coefficients at once:</p>
         <${Eq} name="eq_gnfull" w=${576} alt="c at step t+1 equals c at step t minus (J transpose J plus lambda_t I) inverse times J transpose r of c at step t, with lambda relaxing from 0.3 to 1e-3"/>
         <p>After each update a wrap-resolving step re-wraps every facet delay onto the
         branch nearest the current solution, so the next linearization is taken in the
         right basin.</p>
       <//>
-      <${Step} n="6" title="Walk down in scale — continuation against cycle-skipping">
+      <${Step} n="6" title="Walk down in scale: continuation against cycle-skipping">
         <p>Even the joint problem has traps if attacked all at once: start the fine modes at
         high frequency from a bad guess and the solve lands in a neighboring basin (a
         "cycle skip"). The cure is a schedule over both scale and frequency. The 40
         frequencies are grouped into <b>buckets</b> from low to high; early stages solve
-        only the lowest bucket (~24–33 kHz), where phase wraps slowly and the basin is
-        wide, and later stages enfranchise the higher buckets until the full 24–76 kHz
+        only the lowest bucket (~24-33 kHz), where phase wraps slowly and the basin is
+        wide, and later stages enfranchise the higher buckets until the full 24-76 kHz
         band participates. In lock-step the mode count grows <span class="mono">8 → 12 → 20 → 36 → 60</span> as the damping λ relaxes.
         Against a bad start, the whole schedule is run from <b>three initializations of
-        the coefficients</b> — the zero start plus independent Gaussian-noise draws on <i>c</i> — and the finisher with the lowest misfit wins. (The frozen campaign
+        the coefficients</b>, the zero start plus independent Gaussian-noise draws on <i>c</i>, and the finisher with the lowest misfit wins. (The frozen campaign
         configuration ran the single zero start; the Gaussian multistart is the wider
         protocol's safety net for marginal frames.) A toy version of the objective shows
         the whole story:</p>
       <//>
-      <${Fig} name="toy_cont" cap="<b>Why continuation works</b> (toy model of the objective, two error directions). Left — the low band: one wide, benign basin. Anywhere reasonable rolls to the bottom. Right — the imaging band: the true minimum is sharp and decisive, but ringed by cycle-skip ridges deadly to a cold start. The schedule enters on the left surface and finishes on the right one. (Toy band edges are illustrative; the real click band is 24–76 kHz — the shape is the point.)"/>
+      <${Fig} name="toy_cont" cap="<b>Why continuation works</b> (toy model of the objective, two error directions). Left (the low band): one wide, benign basin. Anywhere reasonable rolls to the bottom. Right (the imaging band): the true minimum is sharp and decisive, but ringed by cycle-skip ridges deadly to a cold start. The schedule enters on the left surface and finishes on the right one. (Toy band edges are illustrative; the real click band is 24-76 kHz, the shape is the point.)"/>
       <div style=${{height:26}}></div>
-      <${Fig} name="loss_real" cap="<b>And the real thing</b> — the same objective scanned on actual twin data (not the toy). Left: the full-band misfit over surface perturbations; a clear basin at the true surface (floor 0.860 — the Kirchhoff model-error floor, honestly not zero) versus ≈0.99 away from it. The wrap ambiguities appear exactly where the arithmetic predicts. Right: per band — the seed basin is wide, the imaging basin sharp, all on the same floor. (Campaign fits land below 0.86 — 0.52–0.67 — because the fitted modes partially absorb model error; this scan holds the surface at fixed candidates.)"/>
+      <${Fig} name="loss_real" cap="<b>And the real thing:</b> the same objective scanned on actual twin data (not the toy). Left: the full-band misfit over surface perturbations; a clear basin at the true surface (floor 0.860, the Kirchhoff model-error floor, honestly not zero) versus ≈0.99 away from it. The wrap ambiguities appear exactly where the arithmetic predicts. Right: per band, the seed basin is wide, the imaging basin sharp, all on the same floor. (Campaign fits land below 0.86, at 0.52 to 0.67, because the fitted modes partially absorb model error; this scan holds the surface at fixed candidates.)"/>
       <div style=${{height:26}}></div>
       <${Step} n="7" title="Know when to refuse">
         <p>The final relative misfit is compared against an acceptance threshold calibrated
-        on reference frames. Above threshold, the frame is <b>refused</b> — no correction is
+        on reference frames. Above threshold, the frame is <b>refused</b>: no correction is
         published. One campaign frame refused exactly this way; its stored counterfactual
         shows the flag prevented a correction that would have <i>hurt</i> (−1.0 dB).</p>
       <//>
@@ -809,19 +818,19 @@ function Algorithm(){
         <p>The accepted correction is trusted in a graded core around the star's footprint,
         blended back to the mapper's surface outside it, and the combined surface drives the
         beamforming reconstructor. On the headline frame, band-by-band, the handed-off surface
-        beats the mapper in every wavelength band — including the ones the mapper gets
-        backwards. (This is not guaranteed in general — see "The map is not the mission"
+        beats the mapper in every wavelength band, including the ones the mapper gets
+        backwards. (This is not guaranteed in general; see "The map is not the mission"
         under Results.)</p>
       <//>
-      <${Fig} name="bandmap_f11" cap="<b>Before and after, band by band</b> (headline frame). In the finest bands of the damaging window (below ~6 cm) the mapper sits at −1 to −16% — worse than assuming flat; the guide-star correction lifts every band positive, +17/+13/+10% exactly where the mapper failed outright."/>
+      <${Fig} name="bandmap_f11" cap="<b>Before and after, band by band</b> (headline frame). In the finest bands of the damaging window (below ~6 cm) the mapper sits at −1 to −16%, worse than assuming flat; the guide-star correction lifts every band positive, +17/+13/+10% exactly where the mapper failed outright."/>
     </section>
 
     <section>
-      <div class="note"><p><b>Why Gauss–Newton and not gradient descent?</b> The objective
+      <div class="note"><p><b>Why Gauss-Newton and not gradient descent?</b> The objective
       is a phase-alignment misfit whose curvature <i>is</i> the information: the joint normal
       system is the multi-frequency triangulation of the screen. Damped GN uses that structure
       directly; first-order descent on the same objective inherits the wrap ambiguities one
-      frequency at a time — precisely the trap the joint solve exists to escape. The
+      frequency at a time, precisely the trap the joint solve exists to escape. The
       objective is the claim; the algorithm is just how it's climbed.</p></div>
     </section>
   </div>`;
@@ -833,57 +842,57 @@ function Results(){
     <h2>Nine frames, twenty-four reflectors, nothing hidden</h2>
     <p class="bigclaim">On the frames the estimator accepted, the guide star recovers a
     median <b>52%</b> of the gap between the mapper's focus and true-surface
-    focus — reflector by reflector, out of sample.</p>
+    focus, reflector by reflector, out of sample.</p>
 
     <section>
       <h3>The best-case pair</h3>
       <div class="prose wide1">
         <p>Two scenes built to show the correction at its clearest: spacings at or above
-        the resolution limit (16 cm — above it — and 14 cm — at it), on the most benign
+        the resolution limit (16 cm above it, 14 cm at it), on the most benign
         surface in the seed-8 sequence (footprint relief 5.55 mm, rank 1 of 16 by the
-        campaign's screening rule). Four predictions were registered before the readout —
-        acceptance, capture floors, inter-target dips in the guide volumes, matching dips
-        in the truth volumes — and <b>all four passed</b>, with the frozen configuration
+        campaign's screening rule). Four predictions were registered before the readout
+        (acceptance, capture floors, inter-target dips in the guide volumes, matching dips
+        in the truth volumes), and <b>all four passed</b>, with the frozen configuration
         untouched.</p>
       </div>
-      <${Fig} name="volumes_BW" cap="<b>Three reflectors, 14 cm apart.</b> Peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB — deliveries +8.2/+5.7/+4.9 dB (the project's largest), captures 83/74/68%; inter-target dips 5.8 and 11.2 dB — three resolved returns, mirroring the truth panel's 15–23 dB dips."/>
+      <${Fig} name="volumes_BW" cap="<b>Three reflectors, 14 cm apart.</b> Peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Deliveries +8.2/+5.7/+4.9 dB (the project's largest), captures 83/74/68%; inter-target dips 5.8 and 11.2 dB give three resolved returns, mirroring the truth panel's 15 to 23 dB dips."/>
       <div style=${{height:24}}></div>
-      <${Fig} name="volumes_AW" cap="<b>Two reflectors, 16 cm apart.</b> Peaks −10.6/−8.8 → −4.3/−3.2 dB (deliveries +5.9/+5.3 dB, captures 68/64%); inter-target dip 6.8 dB — two resolved returns."/>
+      <${Fig} name="volumes_AW" cap="<b>Two reflectors, 16 cm apart.</b> Peaks −10.6/−8.8 → −4.3/−3.2 dB (deliveries +5.9/+5.3 dB, captures 68/64%); inter-target dip 6.8 dB, two resolved returns."/>
     </section>
 
     <section>
       <h3>The campaign behind it</h3>
       <div class="prose wide1">
-        <p>Protocol: the configuration was selected on <b>one</b> seed-8 frame — f11, marked
-        "tuning frame" below — then frozen, and every other frame was scored <b>out-of-sample</b>: new surface realizations, new geometries. Frames entered by
+        <p>Protocol: the configuration was selected on <b>one</b> seed-8 frame (f11, marked
+        "tuning frame" below), then frozen, and every other frame was scored <b>out-of-sample</b>: new surface realizations, new geometries. Frames entered by
         pre-declared criteria; every frame that entered is in the table, including the refusal
         and the one negative row. Scenes carry the random seed of their simulated sea (seed-7,
-        seed-8 — different seeds are different oceans), and frame tags index each scene's own
-        wave sequence, so two scenes can each have an f5. Frames marked <span class="chip">showcase</span> carry the full figure set — the best frame per
+        seed-8; different seeds are different oceans), and frame tags index each scene's own
+        wave sequence, so two scenes can each have an f5. Frames marked <span class="chip">showcase</span> carry the full figure set, the best frame per
         scene. <b>Capture</b> = the fraction of the mapper-to-truth focus gap recovered, per
         reflector; <b>delivery</b> = the same gain in dB.</p>
       </div>
 
       <div class="tblwrap"><table>
-        <thead><tr><th>Scene</th><th>Frame</th><th>Final misfit</th><th>Delivery (dB)</th><th>Capture</th></tr></thead>
+        <thead><tr><th>Scene</th><th>Frame</th><th>Final misfit</th><th>Delivery (<span style=${{textTransform:"none"}}>dB</span>)</th><th>Capture</th></tr></thead>
         <tbody>
         ${CAMPAIGN.map(f=>html`<tr key=${f.scene+f.tag} class=${f.refused?"dim":((f.showcase||f.tuning)?"hl":"")}>
           <td>${f.scene} ${f.tuning?html`<span class="chip">tuning frame</span>`:(f.showcase&&html`<span class="chip">showcase</span>`)}</td>
           <td class="num">${f.tag}</td>
           <td class="num">${f.rel.toFixed(3)}</td>
-          <td class="num">${f.refused?"refused (would-harm −1.0)":f.rows.map(r=>(r.d>0?"+":"")+r.d.toFixed(1)).join(" / ")}</td>
-          <td class="num">${f.refused?"—":f.rows.map(r=>r.c+"%").join(" / ")}</td>
+          <td class="num">${f.refused?"refused (would-harm −1.0)":f.rows.map(r=>(r.d>0?"+":"")+displayNumber(r.d.toFixed(1))).join(" / ")}</td>
+          <td class="num">${f.refused?"n/a":f.rows.map(r=>displayNumber(r.c)+"%").join(" / ")}</td>
         </tr>`)}
         </tbody>
       </table></div>
-      <p style=${{marginTop:10}}><span class="mono" style=${{fontSize:"12.5px",color:"var(--muted)"}}>Denominators: 10 candidate frames scored, 9 accepted by the estimator's own flag, 24 reflector rows, 23 positive. n = 9 correlated frames — a mechanism demonstration, not a population estimate.</span></p>
+      <p style=${{marginTop:10}}><span class="mono" style=${{fontSize:"12.5px",color:"var(--muted)"}}>Denominators: 10 candidate frames scored, 9 accepted by the estimator's own flag, 24 reflector rows, 23 positive. n = 9 correlated frames; a mechanism demonstration, not a population estimate.</span></p>
 
       <div style=${{marginTop:18}}></div>
       <${CampaignChart}/>
 
       <div class="prose wide1" style=${{marginTop:18}}>
-        <p>How to read the campaign's reconstructions: those reflectors sit 5–7 cm apart —
-        below the system's ~10–13 cm refraction-limited lateral resolution, so
+        <p>How to read the campaign's reconstructions: those reflectors sit 5-7 cm apart,
+        below the system's ~10-13 cm refraction-limited lateral resolution, so
         at this wavelength each cluster is <b>one compact object</b>, the way a mine-like
         target or a piece of man-made debris presents to sonar in practice. Their test is
         detection, localization, and focus concentration; separation is what the best-case
@@ -897,16 +906,16 @@ function Results(){
     <section>
       <h3>The tuning frame's surface story</h3>
       <div class="prose wide1">
-        <p>The frame the configuration was selected on (seed-8 f11 — three collinear
+        <p>The frame the configuration was selected on (seed-8 f11: three collinear
         reflectors, in a scene bundle generated independently by an external auditor) is
         where the surface correction itself is cleanest: band-by-band improvement across the
         spectrum, shown in the Algorithm tab. Here is what that looks like as surfaces. The
         peak levels quoted in captions are target-local peaks; the table's deliveries use a
-        stricter fixed-position metric (+1.4/+1.3/+2.3 dB for this frame) — both are stored.</p>
+        stricter fixed-position metric (+1.4/+1.3/+2.3 dB for this frame); both are stored.</p>
       </div>
-      <${Fig} name="fourpanel_f11" cap="<b>Four fields at true scale</b> — ~3 cm of chop on a 40 cm patch. The true surface; the mapper's estimate (chop right, fine ripples missing); the guide-star correction — the millimeter ripple field the click recovered; and the corrected surface handed to imaging."/>
+      <${Fig} name="fourpanel_f11" cap="<b>Four fields at true scale:</b> ~3 cm of chop on a 40 cm patch. The true surface; the mapper's estimate (chop right, fine ripples missing); the guide-star correction, the millimeter ripple field the click recovered; and the corrected surface handed to imaging."/>
       <div style=${{height:22}}></div>
-      <${Fig} name="residuals_f11" cap="<b>Height error against truth, before and after.</b> Dashed circle: the r = 10 cm trusted core, where root-mean-square error drops 3.6 → 2.6 mm. Near the patch rim it rises (2.5 → 4.1 mm) — the honest wrinkle taken up in 'The map is not the mission' below."/>
+      <${Fig} name="residuals_f11" cap="<b>Height error against truth, before and after.</b> Dashed circle: the r = 10 cm trusted core, where root-mean-square error drops 3.6 → 2.6 mm. Near the patch rim it rises (2.5 → 4.1 mm); that wrinkle is taken up in 'The map is not the mission' below."/>
     </section>
 
     <section>
@@ -916,11 +925,11 @@ function Results(){
         volume (the eight out-of-sample campaign volumes plus the best-case pair; the tuning
         frame is scored by a separate path). <b>Artifact census:</b> in all ten
         guide-corrected images the brightest off-target voxel stays <i>below</i> the
-        brightest target peak (−0.15 to −3.6 dB) — and on the five scenes where mapper
+        brightest target peak (−0.15 to −3.6 dB), and on the five scenes where mapper
         clutter outshone that peak (+2.9, +2.6, +0.5, +0.5, +0.4 dB), the correction flips
         it back underneath. The guide star does not hallucinate; it demotes false structure
         while raising real targets. <b>Verification:</b> every published score was
-        independently recomputed from the archived volumes with fresh code — all reproduce
+        independently recomputed from the archived volumes with fresh code; all reproduce
         exactly.</p>
       </div>
     </section>
@@ -928,7 +937,7 @@ function Results(){
     <section>
       <h3>The map is not the mission</h3>
       <div class="prose wide1">
-        <p>An honest wrinkle the campaign surfaced: frames exist where the <i>surface map</i> barely improves — or degrades near the patch rim — while <i>imaging</i> improves
+        <p>An honest wrinkle the campaign surfaced: frames exist where the <i>surface map</i> barely improves, or degrades near the patch rim, while <i>imaging</i> improves
         substantially. The estimator is fit to the same data the image is formed from, so it
         recovers the surface components that steer focus, and can spend weakly-constrained
         rim modes compensating errors in the mapper's long-wavelength reference. Once seen,
@@ -947,7 +956,7 @@ function Rigor(){
       <p>Everything here was generated in simulation, which makes process the product:
       predictions were written down before readouts, the estimator was allowed to say no,
       an outside auditor ran the pipeline, and every number carries its own paper trail.
-      The record below includes the parts that failed — they are why the final
+      The record below includes the parts that failed; they are why the final
       configuration works.</p>
     </div>
 
@@ -955,13 +964,13 @@ function Rigor(){
       <h3>Three checks that had teeth</h3>
       <div class="prose wide">
         <p><b>A banked prediction failed.</b> A registered transfer prediction scored
-        5.5% against a banked 20–30% and stays in the record as a <span class="mono">FAIL</span>. Diagnosing that miss is what produced the frozen
-        configuration behind the campaign table — the failure was load-bearing.</p>
+        5.5% against a banked 20-30% and stays in the record as a <span class="mono">FAIL</span>. Diagnosing that miss is what produced the frozen
+        configuration behind the campaign table; the failure was load-bearing.</p>
         <p><b>The estimator refused a frame.</b> One campaign frame exceeded the misfit
         threshold and no correction was published. Its stored counterfactual shows the
         flag was right: accepting it would have cost −1.0 dB.</p>
         <p><b>An outside auditor broke things.</b> An independent auditor reran the
-        pipeline and found two real defects — an optimizer-selection bug and a
+        pipeline and found two real defects: an optimizer-selection bug and a
         spectral-grid convention bug. Both fixes and their re-scored consequences are in
         the record, and the campaign runs on the audited engine, pinned by hash.</p>
       </div>
@@ -973,12 +982,12 @@ function Rigor(){
         <p>Every published number carries its own paper trail. Each result file records a
         cryptographic fingerprint (a checksum) of the exact input data and the exact
         script that produced it, the code revision in version control at run time, and
-        the full command that was run — so any figure on this site can be traced to, and
+        the full command that was run, so any figure on this site can be traced to, and
         regenerated from, precisely the code and data that made it.</p>
         <p>The archived data library (308 files) is indexed by the same checksums, the
         script that generates each figure is stored beside the figure, and as a final
         check every stored score was recomputed from the archived imaging volumes by an
-        independently written piece of code — all of them reproduce exactly.</p>
+        independently written piece of code; all of them reproduce exactly.</p>
       </div>
     </section>
 
@@ -989,12 +998,12 @@ function Rigor(){
         real-water data exists; the fine-band coherent chain ultimately validates in
         water.</p>
         <p><b>Resolution is refraction-limited.</b> The air-side aperture compresses to an
-        in-water numerical aperture of ~0.12 — lateral resolution ~10–13 cm at target
-        depth. Adjacent reflectors 5–7 cm apart are <i>not</i> individually resolved in any
+        in-water numerical aperture of ~0.12, giving lateral resolution of roughly 10 to 13 cm at target
+        depth. Adjacent reflectors 5-7 cm apart are <i>not</i> individually resolved in any
         panel; claims are focus-at-known-positions, never separation. Bandwidth buys depth
         resolution (~1.5 cm), not lateral.</p>
         <p><b>Small numbers.</b> The nine accepted frames include correlated surface realizations
-        across the tested seeds and geometries — a mechanism demonstration, not a population estimate. Score jitter under
+        across the tested seeds and geometries; a mechanism demonstration, not a population estimate. Score jitter under
         frame re-draws is uncharacterized, and the reference-surface repair that likely
         closes the remaining map-quality gap is designed but unrun.</p>
       </div>
@@ -1002,8 +1011,8 @@ function Rigor(){
 
     <section>
       <div class="prose wide1">
-        <p>The complete archive — code, figures, decision ledger, and the cataloged data
-        library — is preserved in version control; access on request.</p>
+        <p>The complete archive (code, figures, decision ledger, and the cataloged data
+        library) is preserved in version control; access on request.</p>
       </div>
     </section>
   </div>`;
@@ -1036,7 +1045,7 @@ function App(){
     <main class="wrap"><${Page}/></main>
     <footer><div class="wrap">
       <div style=${{display:"flex",justifyContent:"space-between",gap:20,flexWrap:"wrap"}}>
-        <div>Deep Acoustic Guide Star — imaging through a dynamic air–water interface.<br/>
+        <div>Deep Acoustic Guide Star: imaging through a dynamic air-water interface.<br/>
         <span class="mono">in-silico validation · project archived 2026 · showcases labeled · denominators stated</span></div>
         <div class="mono" style=${{textAlign:"right"}}>every number traces back to an<br/>archived, checksummed result file</div>
       </div>
