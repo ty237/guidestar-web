@@ -343,15 +343,15 @@ function CampaignChart(){
 /* ------------------- scene navigator ------------------- */
 const SN = [
   {route:"problem", name:"The Problem",
-   blurb:"an airborne array listening into water, and the moving lens in the way"},
+   blurb:"why waves distort sound crossing the surface"},
   {route:"twin", name:"The Digital Twin",
-   blurb:"a credentialed synthetic ocean where the true surface is known"},
+   blurb:"a physics simulation with a known surface and targets"},
   {route:"algorithm", name:"The Algorithm",
-   blurb:"one click, inverted into a 60-mode surface correction"},
+   blurb:"how the recordings become a surface correction"},
   {route:"results", name:"Results",
-   blurb:"the refocused image, scored across nine frames, eight of them out-of-sample"},
+   blurb:"the full campaign, including improvements and rejected corrections"},
   {route:"rigor", name:"Rigor",
-   blurb:"receipts: provenance, refusals, limits"},
+   blurb:"the checks, limitations, and archived evidence"},
 ];
 function wavePath(y0, amp, k, phase){
   const pts=[];
@@ -436,12 +436,9 @@ function Home(){
   return html`<div>
     <div class="hero">
       <div>
-        <${Eyebrow}>Airborne sonar · imaging through a moving water surface<//>
-        <h1>The acoustic guide star: imaging through a dynamic air-water interface</h1>
-        <p class="lede">A laser-made cavitation click beneath the surface acts as an <b>acoustic guide star</b>: one click, fired at a known depth and time and heard through the waves by a
-        128-microphone array in the air, reveals how the surface is bending
-        the rays, so the sonar image underneath can be refocused. Borrowed from
-        astronomy. Pointed down.</p>
+        <${Eyebrow}>Airborne sonar · simulation study<//>
+        <h1>The acoustic guide star: imaging through a moving water surface</h1>
+        <p class="lede">Waves distort sound as it crosses the water's surface, blurring sonar images of objects below. This project uses a brief underwater click as a reference, an <b>acoustic guide star</b>, to estimate that distortion and improve focus. The approach has been tested in physics simulations; real-water validation is still to come.</p>
       </div>
       <div class="heroplate"><img src=${IMG.hero} alt="Exploded view of the scene: microphone array in air, wavy water surface with guide-star read footprint, cavitation click, illuminated targets on the bottom"/><div class="mono" style=${{fontSize:"11px",color:"var(--muted)",paddingTop:8}}>scene stylized, campaign targets are cm-scale reflectors ~0.8 m deep</div></div>
     </div>
@@ -449,52 +446,42 @@ function Home(){
     <section>
       <h2>What is airborne sonar?</h2>
       <div class="prose wide1">
-        <p><b>Airborne sonar is sonar that never touches the water</b>: an ultrasonic
-        array in the air looks straight down and images what lies beneath the surface:
-        no hull, no towed body, no diver. It matters because every alternative must
-        either enter the water or count on it being clear and calm: conventional sonar can't reach the shallows, surf zones,
-        floods, or under-ice water where searching matters most, and cameras or lidar
-        are blinded the moment the water turns murky or choppy. The classic objection, that 99.9 % of sound reflects off the air-water boundary, turns out to be survivable
-        with a large coherent array. The barrier that actually remains is that the
-        boundary <i>moves</i>, and this project is about removing it.</p>
-        <p><${Deeper} to="problem">The full background: what airborne sonar is, what it replaces, and why the surface is the real problem<//></p>
+        <p><b>Sonar forms images from sound reflected by objects.</b> An airborne system keeps its sensing equipment above the water, offering a way to inspect shallow or hard-to-reach areas without deploying submerged instruments. Sound can also work where murky water limits cameras and laser imaging (lidar).</p>
+        <p><${Deeper} to="problem">Why crossing the air-water boundary is difficult<//></p>
       </div>
     </section>
 
     <section>
       <div class="steps">
-        <div class="step"><em>01</em><h3>Map the surface</h3><p>An acoustic surface mapper estimates the water surface. It is accurate at long wavelengths and blind in exactly the bands that destroy focus.</p></div>
-        <div class="step"><em>02</em><h3>Fire the star</h3><p>A focused laser pulse makes a cavitation bubble ~0.5 m down: a known, point-like, broadband click on the far side of the waves.</p></div>
-        <div class="step"><em>03</em><h3>Invert the screen</h3><p>The click's arrival at all 128 microphones is fit jointly across frequencies for a 60-mode correction to the mapped surface.</p></div>
-        <div class="step"><em>04</em><h3>Refocus the image</h3><p>The corrected surface feeds the imaging reconstructor; the same click also illuminates the targets it now focuses.</p></div>
+        <div class="step"><em>01</em><h3>Map the surface</h3><p>The array first estimates the water's shape. This initial map captures broad waves but misses fine ripples that disturb the sound.</p></div>
+        <div class="step"><em>02</em><h3>Create a reference</h3><p>A laser pulse creates a tiny bubble about 0.5 m underwater. Its collapse produces a brief click; the laser sets the reference depth and timing.</p></div>
+        <div class="step"><em>03</em><h3>Estimate the correction</h3><p>The 128 microphones record the click through the waves. Fitting their recordings together across frequencies estimates the missing surface detail.</p></div>
+        <div class="step"><em>04</em><h3>Refocus the image</h3><p>The corrected map helps align the target echoes. Those echoes come from the same click, so calibration and imaging use the same surface snapshot.</p></div>
       </div>
+      <p style=${{marginTop:16}}><${Deeper} to="algorithm">The signal-processing steps and equations<//></p>
     </section>
 
     <section>
       <div class="stats">
-        <div class="stat"><b>23 / 24</b><span>reflectors improved across the campaign</span></div>
-        <div class="stat"><b>+8.2 dB</b><span>largest single-reflector focus gain (best-case pair; campaign best +6.7)</span></div>
-        <div class="stat"><b>52 %</b><span>median share of the focus gap recovered per reflector</span></div>
-        <div class="stat"><b>0.981</b><span>twin full-wave solver vs the analytic Sommerfeld oracle</span></div>
+        <div class="stat"><b>23 / 24</b><span>test targets with improved focus across the campaign</span></div>
+        <div class="stat"><b>+8.2 dB</b><span>largest focus gain at one target (best-case pair; campaign best +6.7 dB)</span></div>
+        <div class="stat"><b>52 %</b><span>median recovery of focus lost to surface error</span></div>
+        <div class="stat"><b>0.981</b><span>simulation agreement with an exact reference (correlation: 1 is perfect)</span></div>
       </div>
     </section>
 
     <section>
-      <${Fig} name="volumes_BW" cap="<b>What the correction does.</b> Three reflectors, 14 cm apart, under a real simulated sea (the full protocol and campaign, one tuning frame and eight out-of-sample, are under Results). Left: focused through the mapper's surface, the targets barely register. Middle: through the guide-star-corrected surface: three cleanly separated returns on the true positions (cyan rings), peaks −11.2/−10.7/−7.8 → −2.9/−5.0/−2.8 dB. Right: the true-surface ceiling. One shared brightness scale."/>
+      <${Fig} name="volumes_BW" cap="<b>One scene, three reconstructions.</b> Three simulated test targets sit 14 cm apart. Left: the image formed using the initial surface estimate. Middle: the guide-star correction brings three returns into focus at their true positions (cyan rings). Right: the reference image formed using the exact simulated surface. All panels use one brightness scale. This is a selected best-case example, separate from the nine-frame campaign; per-target measurements and the full evaluation are in <a href='#/results'>Results</a>."/>
     </section>
 
     <section>
       <h2>Explore the system</h2>
-      <p class="prose" style=${{color:"var(--ink2)"}}>The site is organized the way the scene
-      is: hover any element (the array, the surface, the star, the targets, the ruler) or
-      step through with the arrows.</p>
+      <p class="prose" style=${{color:"var(--ink2)"}}>Select an element in the diagram to explore that part of the system, or use the arrows to browse the sections.</p>
       <${SceneNav}/>
     </section>
 
     <section>
-      <div class="banner"><b>IN-SILICO VALIDATION:</b> every result on this site comes from a
-      credentialed digital twin; no real-water data exists yet. Best frames are labeled <b>showcase</b>; every candidate frame scored is reported, including refusals and the
-      one negative row.</div>
+      <div class="banner"><b>READING THE RESULTS:</b> the nine accepted campaign frames include one used to choose the settings and eight tested with those settings fixed. Results also reports the refused frame and the one negative target result. Selected examples are labeled <b>showcase</b>; the best-case pair is reported separately.</div>
     </section>
   </div>`;
 }
@@ -572,19 +559,9 @@ function Problem(){
           before it reaches the telescope. The fix, adaptive optics, fires lasers upward to
           make an artificial <b>guide star</b>, a known point source whose distorted image
           reveals the scrambling, which is then subtracted out of every other observation.</p>
-          <p>Our atmosphere is the water surface; our guide star is a <b>laser-induced
-          cavitation click</b> ~0.5 m deep. A focused pulse boils a microscopic bubble whose
-          collapse is a point-like, broadband snap, and because the laser made it, its firing
-          time is known to nanoseconds and its depth is set by the optics. Its wavefront,
-          recorded across all 128 microphones, has passed through the <i>exact surface</i> the
-          images must be corrected for.</p>
-          <p>The click is <b>dual-use</b>: the same pulse that calibrates the surface also
-          insonifies the targets. The calibration shot <i>is</i> the imaging shot: no
-          separate calibration pass, no stale surface estimate.</p>
-          <p>What the star assumes is explicit and priced: depth (from the optics), time zero
-          (from the laser), a loose lateral prior (the click localizes itself acoustically),
-          and <b>nothing about its waveform</b>; the algorithm eliminates the waveform
-          exactly, per frequency, so an ugly or shot-to-shot-varying click costs nothing.</p>
+          <p>Here the distortion comes from the water surface. Our reference is a <b>laser-induced cavitation click</b> about 0.5 m underwater: a focused laser pulse creates a microscopic bubble whose collapse produces a short sound. The click is approximately point-like and broadband, meaning it spans a wide range of frequencies. The optics set its depth, and its firing time is assumed known to nanoseconds. All 128 microphones record it after it crosses the surface being estimated.</p>
+          <p>The click is <b>dual-use</b>: its direct arrival provides the surface reference, and its echoes from the targets provide the image. Both come from one shot, avoiding a separate calibration pass that could use an outdated surface estimate.</p>
+          <p>The source model also includes a loose prior on horizontal position, which supports acoustic refinement of the click location. Its detailed waveform is treated as unknown: the surface fit eliminates a separate complex gain at each frequency. This lets the waveform vary from shot to shot.</p>
         </div>
       </div>
     </section>
