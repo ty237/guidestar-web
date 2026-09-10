@@ -887,7 +887,7 @@ function Results(){
       <h3>The tuning frame's surface story</h3>
       <div class="prose wide1">
         <p>The frame the configuration was selected on (seed-8 f11: three collinear
-        reflectors, in a scene bundle generated independently by an external auditor) is
+        reflectors) is
         where the surface correction itself is cleanest: band-by-band improvement across the
         spectrum, shown in the Algorithm tab. Here is what that looks like as surfaces. The
         peak levels quoted in captions are target-local peaks; the table's deliveries use a
@@ -935,13 +935,13 @@ function Rigor(){
     <div class="prose wide1">
       <p>Everything here was generated in simulation, which makes process the product:
       predictions were written down before readouts, the estimator was allowed to say no,
-      an outside auditor ran the pipeline, and every number carries its own paper trail.
+      and every number carries its own paper trail.
       The record below includes the parts that failed; they are why the final
       configuration works.</p>
     </div>
 
     <section>
-      <h3>Three checks that had teeth</h3>
+      <h3>Two checks that had teeth</h3>
       <div class="prose wide">
         <p><b>A banked prediction failed.</b> A registered transfer prediction scored
         5.5% against a banked 20-30% and stays in the record as a <span class="mono">FAIL</span>. Diagnosing that miss is what produced the frozen
@@ -949,10 +949,6 @@ function Rigor(){
         <p><b>The estimator refused a frame.</b> One campaign frame exceeded the misfit
         threshold and no correction was published. Its stored counterfactual shows the
         flag was right: accepting it would have cost −1.0 dB.</p>
-        <p><b>An outside auditor broke things.</b> An independent auditor reran the
-        pipeline and found two real defects: an optimizer-selection bug and a
-        spectral-grid convention bug. Both fixes and their re-scored consequences are in
-        the record, and the campaign runs on the audited engine, pinned by hash.</p>
       </div>
     </section>
 
